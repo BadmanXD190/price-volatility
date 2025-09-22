@@ -1,1 +1,14 @@
-node_modules
+# dependencies
+node_modules/
+npm-debug.log
+yarn-error.log
+package-lock.json
+
+# build output
+.next/
+out/
+dist/
+
+# misc
+.DS_Store
+.env
