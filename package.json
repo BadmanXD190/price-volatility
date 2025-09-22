@@ -1,0 +1,21 @@
+{
+    "name": "price-volatility",
+    "private": true,
+    "scripts": {
+      "dev": "next dev",
+      "build": "next build",
+      "start": "next start"
+    },
+    "dependencies": {
+      "next": "14.2.5",
+      "react": "18.3.1",
+      "react-dom": "18.3.1",
+      "swr": "2.2.5",
+      "chart.js": "4.4.3",
+      "react-chartjs-2": "5.2.0"
+    },
+    "devDependencies": {
+      "typescript": "5.5.4"
+    }
+  }
+  
