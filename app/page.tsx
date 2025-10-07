@@ -27,31 +27,51 @@ export default function Page() {
     });
   }, []);
 
-  // fetch series when selection changes
+  // state for toggles
+  const [show1, setShow1] = useState(true);
+  const [show7, setShow7] = useState(false);
+  const [show30, setShow30] = useState(false);
+  
+  // fetch multi series
   useEffect(() => {
     if (itemCode == null || !stateSel) return;
     setLoading(true);
-    const url = `/api/predict?item_code=${itemCode}&state=${encodeURIComponent(stateSel)}&horizon=${horizon}`;
-    fetch(url).then(r => r.json()).then(d => setSeries(d.series || [])).finally(() => setLoading(false));
-  }, [itemCode, stateSel, horizon]);
-
-  // simple chart using <canvas>
+    const url = `/api/predict_multi?item_code=${itemCode}&state=${encodeURIComponent(stateSel)}`;
+    fetch(url)
+      .then(r => r.json())
+      .then(d => {
+        // keep {1:[...],7:[...],30:[...]}
+        setSeries(d.series || {});
+      })
+      .finally(() => setLoading(false));
+  }, [itemCode, stateSel]);
+  
+  // build datasets from toggles
+  function buildDatasets() {
+    const ds: any[] = [];
+    const add = (label: string, arr: any[], color: string) => {
+      if (!arr?.length) return;
+      ds.push({
+        label, data: arr.map((p: any) => ({ x: p.date, y: p.variance })),
+        borderWidth: 2, tension: 0.2, pointRadius: 0, borderColor: color
+      });
+    };
+    if (show1)  add("Next-day (1d)", series[1],  "#4e79a7");
+    if (show7)  add("7 days ahead", series[7],  "#59a14f");
+    if (show30) add("30 days ahead", series[30], "#e15759");
+    return ds;
+  }
+  
+  // chart render
   useEffect(() => {
     const el = document.getElementById("ts") as HTMLCanvasElement | null;
     if (!el) return;
     const chart = new Chart(el, {
       type: "line",
-      data: {
-        labels: series.map((p) => p.date),
-        datasets: [{
-          label: `Predicted variance (h=${horizon}d)`,
-          data: series.map((p) => p.variance),
-          borderWidth: 2,
-          tension: 0.2
-        }]
-      },
+      data: { datasets: buildDatasets() },
       options: {
         responsive: true,
+        parsing: false,
         plugins: { legend: { display: true } },
         scales: {
           x: { type: "time", time: { unit: "day" } },
@@ -60,7 +80,8 @@ export default function Page() {
       }
     });
     return () => chart.destroy();
-  }, [series, horizon]);
+  }, [series, show1, show7, show30]);
+
 
   return (
     <main>
@@ -86,6 +107,11 @@ export default function Page() {
               <option value={7}>7 days ahead</option>
               <option value={30}>30 days ahead</option>
             </select>
+          </div>
+          <div style={{ display: "flex", gap: 16 }}>
+            <label><input type="checkbox" checked={show1} onChange={e=>setShow1(e.target.checked)} /> Next-day (1d)</label>
+            <label><input type="checkbox" checked={show7} onChange={e=>setShow7(e.target.checked)} /> 7 days ahead</label>
+            <label><input type="checkbox" checked={show30} onChange={e=>setShow30(e.target.checked)} /> 30 days ahead</label>
           </div>
         </div>
 
