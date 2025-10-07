@@ -1,8 +1,12 @@
 from fastapi import FastAPI
 
-# Tell FastAPI it's mounted under /api
 app = FastAPI(root_path="/api")
 
+# Avoid automatic / -> // or /api <-> /api/ redirects
+app.router.redirect_slashes = False
+
+# Match both "" and "/" under the root_path
+@app.get("")
 @app.get("/")
 async def read_root():
     return {"message": "Hello, Vercel!"}
