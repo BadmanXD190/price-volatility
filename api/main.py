@@ -1,5 +1,6 @@
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import JSONResponse
+from fastapi import Response
 from dateutil import parser as dtp
 import csv, os
 from typing import List
@@ -70,3 +71,27 @@ async def predict(
         "horizon": horizon,
         "series": [{"date": r["date"], "variance": r["variance"]} for r in sel],
     }
+
+@app.get("/predict_multi")
+async def predict_multi(
+    item_code: int,
+    state: str,
+):
+    rows = load_rows()
+    out = {}
+    for h in (1, 7, 30):
+        sel = [r for r in rows if r["item_code"] == item_code and r["state"] == state and r["horizon"] == h]
+        sel = sorted(sel, key=lambda r: r["date"])
+        out[h] = [{"date": r["date"], "variance": r["variance"]} for r in sel]
+
+    # simple caching (1 hour) so the browser & edge cache it
+    return JSONResponse(
+        {
+            "item_code": item_code,
+            "item_name": ITEM_MAP.get(item_code, str(item_code)),
+            "state": state,
+            "series": out,
+        },
+        headers={"Cache-Control": "public, max-age=3600"}
+    )
+
