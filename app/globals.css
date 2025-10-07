@@ -1,0 +1,4 @@
+:root { color-scheme: dark; }
+main { max-width: 960px; margin: 32px auto; padding: 0 16px; }
+h1 { font-size: 32px; margin: 0 0 12px; }
+.card { background:#111520; padding:16px; border-radius:16px; box-shadow: 0 1px 0 #1a1e2b inset; }
